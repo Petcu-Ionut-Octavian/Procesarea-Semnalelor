@@ -142,7 +142,7 @@ plt.show()
 
 # for k in range(len(t)):
 #     ax.scatter(x[k], y[k], c='red', s=10)
-#     plt.pause(0.001)
+#     plt.pause(0.01)
 
 # plt.show()
 
