@@ -605,7 +605,7 @@ plt.tight_layout()
 
 plt.savefig("spectrograma.pdf")
 
-plt.show()
+#plt.show()
 #%%
 
 # Exercitiul 7
