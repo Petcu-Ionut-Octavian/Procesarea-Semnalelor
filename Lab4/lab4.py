@@ -340,7 +340,72 @@ plt.tight_layout()
 plt.savefig("Spectrograme_vocale.pdf")
 plt.show()
 
+#%%
+# EX 5 - Spectrograme sintetice pentru vocalele a, e, i, o, u
+# Frecvența este afișată pe scară logaritmică
 
+import numpy as np
+import matplotlib.pyplot as plt
+
+vowels = {
+    "a": [700, 1200],
+    "e": [500, 1900],
+    "i": [300, 2500],
+    "o": [500, 900],
+    "u": [350, 800]
+}
+
+fig, axs = plt.subplots(5, 1, figsize=(8, 10))
+
+# frecvențe pe scară logaritmică
+freqs = np.logspace(np.log10(50), np.log10(3000), 500)
+
+times = np.linspace(0, 1, 100)
+
+for ax, (vowel, formants) in zip(axs, vowels.items()):
+
+    S = np.zeros((len(freqs), len(times)))
+
+    # for f in formants:
+    #     S += np.exp(
+    #         -(freqs[:, None] - f) ** 2 /
+    #         (2 * 80 ** 2)
+    #     )
+    
+    for f in formants:
+        S += np.exp(
+            -(freqs[:, None] - f) ** 2 /
+            (2 * 80 ** 2)
+        ) * (1 + 0.1 * np.random.randn(1, len(times)))
+
+    ax.pcolormesh(
+        times,
+        freqs,
+        S,
+        shading="auto",
+        cmap="magma"
+    )
+
+    ax.set_yscale("log")
+
+    ax.set_title(f'Vocala "{vowel}"')
+    ax.set_ylabel("Hz (log)")
+
+    ax.set_yticks([100, 200, 500, 1000, 2000, 3000])
+    ax.get_yaxis().set_major_formatter(
+        plt.ScalarFormatter()
+    )
+
+axs[-1].set_xlabel("Timp [s]")
+
+plt.tight_layout()
+
+plt.savefig(
+    "Spectrograme_vocale.pdf",
+    bbox_inches="tight"
+)
+
+plt.show()
 #%%
 #extra
 import numpy as np
@@ -456,6 +521,91 @@ plt.savefig("spectrograma.pdf")
 plt.show()
 
 
+#%%
+# EX 6
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.io import wavfile
+
+# =====================================
+# (a) Citirea semnalului audio
+# =====================================
+
+fs, s = wavfile.read(
+    r"C:\Users\User\OneDrive\Desktop\Procesarea Semnalelor\Lab4\a.wav"
+)
+
+# dacă este stereo -> păstrăm un singur canal
+if len(s.shape) > 1:
+    s = s[:, 0]
+
+s = s.astype(float)
+
+N = len(s)
+
+# =====================================
+# (b) Grupuri de 1% cu overlap 50%
+# =====================================
+
+window_size = int(0.01 * N)
+step = window_size // 2
+
+# =====================================
+# (c) FFT pentru fiecare grup
+# =====================================
+
+spectrogram = []
+
+for start in range(0, N - window_size, step):
+
+    segment = s[start:start + window_size]
+
+    # fereastră Hann
+    segment = segment * np.hanning(window_size)
+
+    X = np.fft.rfft(segment)
+
+    spectrogram.append(np.abs(X))
+
+spectrogram = np.array(spectrogram).T
+
+# =====================================
+# Axe reale
+# =====================================
+
+freqs = np.fft.rfftfreq(window_size, d=1/fs)
+
+times = np.arange(spectrogram.shape[1]) * step / fs
+
+# =====================================
+# (d) Afișare
+# =====================================
+
+plt.figure(figsize=(10, 6))
+
+plt.pcolormesh(
+    times,
+    freqs,
+    20 * np.log10(spectrogram + 1e-10),
+    shading="auto",
+    cmap="magma"
+)
+
+plt.yscale("log")
+plt.ylim(50, 16000)
+
+plt.colorbar(label="Amplitudine [dB]")
+
+plt.xlabel("Timp [s]")
+plt.ylabel("Frecvență [Hz]")
+plt.title('Spectrograma vocalei "a"')
+
+plt.tight_layout()
+
+plt.savefig("spectrograma.pdf")
+
+plt.show()
 #%%
 
 # Exercitiul 7
